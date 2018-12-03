@@ -1,4 +1,5 @@
 from collections import defaultdict
+import itertools
 import re
 
 with open("input.txt") as f:
@@ -6,24 +7,22 @@ with open("input.txt") as f:
 
 fabric = defaultdict(int)
 
+def positionsInClaim(claim):
+    number, leftOffset, topOffset, width, height = claim
+    xs = range(leftOffset, leftOffset + width)
+    ys = range(topOffset, topOffset + height)
+
+    return itertools.product(xs, ys)
+
+for claim in claims:
+    for position in positionsInClaim(claim):
+        fabric[position] += 1
+
 ##########
 # Part 1 #
 ##########
 
-overlaps = 0
-
-for claim in claims:
-    number, leftOffset, topOffset, width, height = claim
-    for i in range(width):
-        for j in range(height):
-            position = (leftOffset + i, topOffset + j)
-            fabric[position] += 1
-
-            # only count the first time there's an overlapping claim
-            if fabric[position] == 2:
-                overlaps += 1
-
-print("Part 1:", overlaps)
+print("Part 1:", sum(numberOfClaims > 1 for numberOfClaims in fabric.values()))
 
 
 ##########
@@ -31,15 +30,5 @@ print("Part 1:", overlaps)
 ##########
 
 for claim in claims:
-    number, leftOffset, topOffset, width, height = claim
-
-    noneOverlap = True
-
-    for i in range(width):
-        for j in range(height):
-            position = (leftOffset + i, topOffset + j)
-            if fabric[position] > 1:
-                noneOverlap = False
-
-    if noneOverlap:
-        print("Part 2:", number)
+    if all(fabric[position] == 1 for position in positionsInClaim(claim)):
+        print("Part 2:", claim[0])
