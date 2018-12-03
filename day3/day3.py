@@ -1,39 +1,45 @@
 from collections import defaultdict
-
-d = defaultdict(int)
-count = 0
+import re
 
 with open("input.txt") as f:
-    for line in f:
-        p = line.split()
-        n = int(p[0][1:])
-        l = int(p[2].split(",")[0])
-        t = int(p[2].split(",")[1][:-1])
-        w = int(p[3].split("x")[0])
-        h = int(p[3].split("x")[1])
+    claims = [tuple(map(int, re.search(r'#(\d+) @ (\d+),(\d+): (\d+)x(\d+)', line).groups())) for line in f]
 
-        for i in range(w):
-            for j in range(h):
-                d[l + i, t + j] += 1
-                if d[l + i, t + j] == 2:
-                    count += 1
+fabric = defaultdict(int)
 
-print("part 1", count)
+##########
+# Part 1 #
+##########
 
-with open("input.txt") as f:
-    for line in f:
-        p = line.split()
-        n = int(p[0][1:])
-        l = int(p[2].split(",")[0])
-        t = int(p[2].split(",")[1][:-1])
-        w = int(p[3].split("x")[0])
-        h = int(p[3].split("x")[1])
-        Good = True
+overlaps = 0
 
-        for i in range(w):
-            for j in range(h):
-                if d[l + i, t + j] > 1:
-                    Good = False
+for claim in claims:
+    number, leftOffset, topOffset, width, height = claim
+    for i in range(width):
+        for j in range(height):
+            position = (leftOffset + i, topOffset + j)
+            fabric[position] += 1
 
-        if Good:
-            print("part 2", n)
+            # only count the first time there's an overlapping claim
+            if fabric[position] == 2:
+                overlaps += 1
+
+print("Part 1:", overlaps)
+
+
+##########
+# Part 2 #
+##########
+
+for claim in claims:
+    number, leftOffset, topOffset, width, height = claim
+
+    noneOverlap = True
+
+    for i in range(width):
+        for j in range(height):
+            position = (leftOffset + i, topOffset + j)
+            if fabric[position] > 1:
+                noneOverlap = False
+
+    if noneOverlap:
+        print("Part 2:", number)
