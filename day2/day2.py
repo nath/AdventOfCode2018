@@ -1,36 +1,26 @@
-from collections import Counter
-
-two = 0
-three = 0
-
-with open('input.txt') as f:
-    for line in f:
-        c = Counter(line)
-        twoD = 1
-        threeD = 1
-        for d in c:
-            if c[d] == 2:
-                two += twoD
-                twoD = 0
-            if c[d] == 3:
-                three += threeD
-                threeD = 0
-
-print(two * three)
-
 with open('input.txt') as f:
     lines = [line for line in f]
 
-def matches(a, b):
-    mismatch = 0
-    for c, d in zip(a,b):
-        if c != d:
-            mismatch += 1
+##########
+# Part 1 #
+##########
 
-    return mismatch == 1 and len(a) == len(b)
+from collections import Counter
 
-for line1 in lines:
-    for line2 in lines:
-        if matches(line1, line2):
-            print(line1)
-            print(line2)
+two = sum(2 in Counter(line).values() for line in lines)
+three = sum(3 in Counter(line).values() for line in lines)
+
+print("Part 1:", two * three)
+
+
+##########
+# Part 2 #
+##########
+
+import itertools
+
+for line1, line2 in itertools.combinations(lines, 2):
+    differences = set(list(enumerate(line1))) - set(list(enumerate(line2)))
+    if len(differences) == 1:
+        i = differences.pop()[0]
+        print("Part 2:", line1[:i] + line1[i+1:])
