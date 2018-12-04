@@ -2,52 +2,55 @@ from collections import defaultdict, Counter
 
 events = []
 
+SLEEP, WAKE = 0, 1
+
 with open('input.txt') as f:
     for line in f:
         split = line.split()
-        date = split[0][1:].split('-')
-        time = split[1][:-1].split(':')
+
+        year, month, day = map(int, split[0][1:].split('-'))
+        hour, minute = map(int, split[1][:-1].split(':'))
+        number, type = None, None
 
         if split[2] == "Guard":
             number = int(split[3][1:])
-            type = 0
         elif split[2] == "falls":
-            number = -1
-            type = 1
+            type = SLEEP
         else:
-            number = -1
-            type = 2
+            type = WAKE
 
-        events.append((int(date[0]), int(date[1]), int(date[2]), int(time[0]), int(time[1]), number, type))
+        events.append((year, month, day, hour, minute, number, type))
 
 events.sort()
 
 sleepTimes = defaultdict(Counter)
+currentGuard, startOfSleep = None, None
 
-# Part 1
-
-currentGuard = -1
-lastAsleep = 0
-
-for i, event in enumerate(events):
+for event in events:
     _, _, _, _, minute, number, type = event
 
-    if type == 0:
+    if number is not None:
         currentGuard = number
-        continue
+    elif type == SLEEP:
+        startOfSleep = minute
+    elif type == WAKE:
+        sleepTimes[currentGuard].update(range(startOfSleep, minute))
+    else:
+        raise ValueError("Improper data")
 
-    if type == 1:
-        lastAsleep = minute
-        continue
+##########
+# Part 1 #
+##########
 
-    sleepTimes[currentGuard].update(range(lastAsleep, minute))
+guard = max(sleepTimes, key = lambda k: sum(sleepTimes[k].values()))
+minute = sleepTimes[guard].most_common(1)[0][0]
 
-sleepiestGuard = max(sleepTimes, key = lambda k: sum(sleepTimes[k].values()))
-sleepiestMinute = sleepTimes[sleepiestGuard].most_common(1)[0][0]
+print("Part 1:", guard * minute)
 
-print("Part 1:", sleepiestGuard * sleepiestMinute)
 
-# Part 2
+##########
+# Part 2 #
+##########
 
 guard = max(sleepTimes, key = lambda k: sleepTimes[k].most_common(1)[0][1])
 minute = sleepTimes[guard].most_common(1)[0][0]
